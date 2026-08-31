@@ -1,0 +1,2309 @@
+<!doctype html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>🔖 Bookmark Manager</title>
+        <style>
+            /* ════════════════════════════════════════
+   VARIÁVEIS & RESET
+════════════════════════════════════════ */
+            :root {
+                --bg: #0d1117;
+                --sidebar-bg: #161b22;
+                --card-bg: #21262d;
+                --card-hover: #2d333b;
+                --border: #30363d;
+                --border-hi: #444c56;
+                --text: #e6edf3;
+                --text-dim: #8b949e;
+                --text-muted: #484f58;
+                --accent: #388bfd;
+                --accent-dim: rgba(56, 139, 253, 0.15);
+                --green: #3fb950;
+                --red: #f85149;
+                --sidebar-w: 240px;
+            }
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+                    sans-serif;
+                background: var(--bg);
+                color: var(--text);
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            /* ════════════════════════════════════════
+   LOGIN VIEW
+════════════════════════════════════════ */
+            #v-login {
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            .login-card {
+                background: var(--sidebar-bg);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 38px 40px;
+                width: 100%;
+                max-width: 400px;
+                display: flex;
+                flex-direction: column;
+                gap: 22px;
+                box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+                animation: card-in 0.25s ease;
+            }
+            @keyframes card-in {
+                from {
+                    transform: translateY(-14px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            .login-brand {
+                text-align: center;
+            }
+            .login-brand .lbemoji {
+                font-size: 2.4rem;
+                display: block;
+                margin-bottom: 8px;
+            }
+            .login-brand h1 {
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: var(--accent);
+                margin-bottom: 4px;
+            }
+            .login-brand p {
+                font-size: 0.82rem;
+                color: var(--text-dim);
+            }
+
+            .tabs {
+                display: flex;
+                background: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 3px;
+                gap: 2px;
+            }
+            .tab {
+                flex: 1;
+                background: none;
+                border: none;
+                border-radius: 5px;
+                padding: 8px;
+                color: var(--text-dim);
+                font-size: 0.875rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition:
+                    background 0.15s,
+                    color 0.15s;
+            }
+            .tab.active {
+                background: var(--accent);
+                color: #fff;
+                font-weight: 700;
+            }
+            .tab:not(.active):hover {
+                background: rgba(255, 255, 255, 0.05);
+                color: var(--text);
+            }
+
+            .auth-error {
+                background: rgba(248, 81, 73, 0.12);
+                border: 1px solid rgba(248, 81, 73, 0.35);
+                border-radius: 6px;
+                padding: 10px 12px;
+                font-size: 0.82rem;
+                color: var(--red);
+                line-height: 1.45;
+            }
+            .btn-auth {
+                width: 100%;
+                background: var(--accent);
+                color: #fff;
+                border: none;
+                border-radius: 7px;
+                padding: 11px;
+                font-size: 0.9rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: background 0.15s;
+            }
+            .btn-auth:hover {
+                background: #1f6feb;
+            }
+            .pass-wrap {
+                position: relative;
+            }
+            .pass-wrap input {
+                padding-right: 42px !important;
+            }
+            .btn-eye {
+                position: absolute;
+                right: 9px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 0.9rem;
+                padding: 4px;
+                opacity: 0.5;
+                transition: opacity 0.12s;
+            }
+            .btn-eye:hover {
+                opacity: 1;
+            }
+            .login-note {
+                text-align: center;
+                font-size: 0.72rem;
+                color: var(--text-muted);
+                line-height: 1.5;
+            }
+
+            /* ════════════════════════════════════════
+   APP VIEW
+════════════════════════════════════════ */
+            #v-app {
+                display: grid;
+                grid-template-columns: var(--sidebar-w) 1fr;
+                height: 100vh;
+            }
+
+            /* ─── Sidebar ──────────────────────── */
+            #sidebar {
+                background: var(--sidebar-bg);
+                border-right: 1px solid var(--border);
+                display: flex;
+                flex-direction: column;
+                padding: 16px 12px;
+                gap: 16px;
+                overflow-y: auto;
+            }
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 4px 8px;
+            }
+            .brand span:first-child {
+                font-size: 1.4rem;
+            }
+            .brand-name {
+                font-size: 1.1rem;
+                font-weight: 700;
+            }
+
+            .btn-new {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                width: 100%;
+                background: var(--accent);
+                color: #fff;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 14px;
+                font-size: 0.88rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition:
+                    background 0.15s,
+                    transform 0.1s;
+            }
+            .btn-new:hover {
+                background: #1f6feb;
+                transform: translateY(-1px);
+            }
+
+            .sidebar-nav {
+                flex: 1;
+            }
+            .nav-label {
+                font-size: 0.7rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+                color: var(--text-muted);
+                padding: 0 8px;
+                margin-bottom: 4px;
+            }
+            #cat-nav {
+                list-style: none;
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+            .cat-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 7px 10px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 0.875rem;
+                color: var(--text-dim);
+                transition:
+                    background 0.12s,
+                    color 0.12s;
+                user-select: none;
+            }
+            .cat-item:hover {
+                background: rgba(255, 255, 255, 0.05);
+                color: var(--text);
+            }
+            .cat-item.active {
+                background: var(--accent-dim);
+                color: var(--accent);
+                font-weight: 600;
+            }
+            .cat-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                flex-shrink: 0;
+            }
+            .cat-count {
+                margin-left: auto;
+                font-size: 0.7rem;
+                background: rgba(255, 255, 255, 0.07);
+                padding: 1px 6px;
+                border-radius: 10px;
+                color: var(--text-muted);
+            }
+            .cat-item.active .cat-count {
+                background: rgba(56, 139, 253, 0.2);
+                color: var(--accent);
+            }
+
+            .sidebar-footer {
+                padding-top: 10px;
+                border-top: 1px solid var(--border);
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .btn-manage {
+                width: 100%;
+                background: none;
+                border: none;
+                color: var(--text-dim);
+                font-size: 0.82rem;
+                padding: 8px 10px;
+                border-radius: 6px;
+                cursor: pointer;
+                text-align: left;
+                transition:
+                    background 0.12s,
+                    color 0.12s;
+            }
+            .btn-manage:hover {
+                background: rgba(255, 255, 255, 0.05);
+                color: var(--text);
+            }
+
+            .user-row {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 8px;
+            }
+            .user-name {
+                flex: 1;
+                font-size: 0.72rem;
+                color: var(--text-muted);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .btn-logout {
+                background: none;
+                border: 1px solid var(--border);
+                color: var(--text-muted);
+                font-size: 0.72rem;
+                padding: 4px 8px;
+                border-radius: 5px;
+                cursor: pointer;
+                white-space: nowrap;
+                flex-shrink: 0;
+                transition:
+                    background 0.12s,
+                    color 0.12s,
+                    border-color 0.12s;
+            }
+            .btn-logout:hover {
+                background: rgba(248, 81, 73, 0.12);
+                border-color: rgba(248, 81, 73, 0.4);
+                color: var(--red);
+            }
+
+            /* ─── Main ─────────────────────────── */
+            #main {
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                overflow: hidden;
+            }
+            #topbar {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 20px;
+                border-bottom: 1px solid var(--border);
+                flex-shrink: 0;
+            }
+            .search-wrap {
+                flex: 1;
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+            .ico-search {
+                position: absolute;
+                left: 10px;
+                width: 14px;
+                height: 14px;
+                color: var(--text-muted);
+                pointer-events: none;
+            }
+            #search-input {
+                width: 100%;
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                padding: 8px 32px 8px 34px;
+                color: var(--text);
+                font-size: 0.875rem;
+                outline: none;
+                transition: border-color 0.15s;
+            }
+            #search-input:focus {
+                border-color: var(--accent);
+            }
+            #search-input::placeholder {
+                color: var(--text-muted);
+            }
+            .btn-clear {
+                position: absolute;
+                right: 8px;
+                background: none;
+                border: none;
+                color: var(--text-muted);
+                cursor: pointer;
+                font-size: 0.8rem;
+                padding: 2px 5px;
+                border-radius: 4px;
+            }
+            .btn-clear:hover {
+                color: var(--text);
+            }
+            .topbar-right {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-shrink: 0;
+            }
+            #sort-select {
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                color: var(--text);
+                font-size: 0.82rem;
+                padding: 7px 10px;
+                cursor: pointer;
+                outline: none;
+            }
+            .view-btns {
+                display: flex;
+                gap: 2px;
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                padding: 3px;
+            }
+            .vbtn {
+                background: none;
+                border: none;
+                border-radius: 4px;
+                padding: 4px 7px;
+                cursor: pointer;
+                color: var(--text-dim);
+                display: flex;
+                align-items: center;
+                transition:
+                    background 0.12s,
+                    color 0.12s;
+            }
+            .vbtn svg {
+                width: 14px;
+                height: 14px;
+            }
+            .vbtn:hover {
+                background: rgba(255, 255, 255, 0.07);
+                color: var(--text);
+            }
+            .vbtn.active {
+                background: var(--accent-dim);
+                color: var(--accent);
+            }
+
+            #results-bar {
+                padding: 7px 20px;
+                border-bottom: 1px solid var(--border);
+                flex-shrink: 0;
+            }
+            #results-count {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+            }
+            #bm-container {
+                flex: 1;
+                overflow-y: auto;
+                padding: 20px;
+            }
+            #bm-container.view-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+                gap: 14px;
+                align-content: start;
+            }
+            #bm-container.view-list {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            /* ─── Cards ─────────────────────────── */
+            .bm-card {
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                transition:
+                    border-color 0.15s,
+                    transform 0.15s,
+                    box-shadow 0.15s;
+            }
+            .bm-card:hover {
+                border-color: var(--border-hi);
+                transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            }
+            .card-top {
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .card-fav,
+            .card-fav-fb {
+                width: 20px;
+                height: 20px;
+                flex-shrink: 0;
+                border-radius: 3px;
+                margin-top: 2px;
+            }
+            .card-fav-fb {
+                background: var(--accent-dim);
+                color: var(--accent);
+                font-size: 10px;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-transform: uppercase;
+            }
+            .card-text {
+                flex: 1;
+                min-width: 0;
+            }
+            .card-title {
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: var(--text);
+                text-decoration: none;
+                display: block;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                transition: color 0.12s;
+            }
+            .card-title:hover {
+                color: var(--accent);
+            }
+            .card-domain {
+                font-size: 0.72rem;
+                color: var(--text-muted);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .card-desc {
+                font-size: 0.8rem;
+                color: var(--text-dim);
+                line-height: 1.45;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            .card-foot {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-top: auto;
+            }
+            .cat-tag {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                font-size: 0.7rem;
+                font-weight: 500;
+                color: var(--text-dim);
+                padding: 2px 8px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 20px;
+                max-width: 120px;
+                overflow: hidden;
+            }
+            .cat-tag span:last-child {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .card-actions {
+                display: flex;
+                gap: 4px;
+                opacity: 0;
+                transition: opacity 0.15s;
+            }
+            .bm-card:hover .card-actions,
+            .bm-row:hover .card-actions {
+                opacity: 1;
+            }
+
+            /* ─── Rows ──────────────────────────── */
+            .bm-row {
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 10px 14px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                transition: border-color 0.12s;
+            }
+            .bm-row:hover {
+                border-color: var(--border-hi);
+            }
+            .row-fav {
+                width: 16px;
+                height: 16px;
+                border-radius: 2px;
+                flex-shrink: 0;
+            }
+            .row-title {
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: var(--text);
+                text-decoration: none;
+                flex: 1;
+                min-width: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                transition: color 0.12s;
+            }
+            .row-title:hover {
+                color: var(--accent);
+            }
+            .row-domain {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                width: 140px;
+                flex-shrink: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .btn-icon {
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: var(--text-muted);
+                padding: 4px 6px;
+                border-radius: 5px;
+                font-size: 0.82rem;
+                line-height: 1;
+                transition:
+                    background 0.12s,
+                    color 0.12s;
+            }
+            .btn-icon:hover {
+                background: rgba(255, 255, 255, 0.07);
+                color: var(--text);
+            }
+            .btn-icon.del:hover {
+                background: rgba(248, 81, 73, 0.15);
+                color: var(--red);
+            }
+
+            /* ─── Empty state ───────────────────── */
+            #empty-state {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                padding: 80px 20px;
+                text-align: center;
+                color: var(--text-muted);
+            }
+            .empty-icon {
+                font-size: 3rem;
+            }
+            #empty-state h3 {
+                font-size: 1.05rem;
+                color: var(--text-dim);
+            }
+            #empty-state p {
+                font-size: 0.875rem;
+            }
+            #empty-state strong {
+                color: var(--text);
+            }
+
+            /* ════════════════════════════════════════
+   BOTÕES COMPARTILHADOS
+════════════════════════════════════════ */
+            .btn-primary {
+                background: var(--accent);
+                color: #fff;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-size: 0.875rem;
+                font-weight: 600;
+                cursor: pointer;
+                flex-shrink: 0;
+                transition: background 0.15s;
+            }
+            .btn-primary:hover {
+                background: #1f6feb;
+            }
+            .btn-secondary {
+                background: var(--card-bg);
+                color: var(--text);
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-size: 0.875rem;
+                cursor: pointer;
+                transition:
+                    background 0.15s,
+                    border-color 0.15s;
+            }
+            .btn-secondary:hover {
+                background: var(--card-hover);
+                border-color: var(--border-hi);
+            }
+            .btn-danger {
+                background: rgba(248, 81, 73, 0.15);
+                color: var(--red);
+                border: 1px solid rgba(248, 81, 73, 0.4);
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-size: 0.875rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.15s;
+            }
+            .btn-danger:hover {
+                background: rgba(248, 81, 73, 0.25);
+            }
+
+            /* ════════════════════════════════════════
+   CAMPOS DE FORMULÁRIO
+════════════════════════════════════════ */
+            .field {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+            .field label {
+                font-size: 0.8rem;
+                font-weight: 600;
+                color: var(--text-dim);
+            }
+            .req {
+                color: var(--red);
+            }
+            .field input,
+            .field textarea,
+            .field select {
+                background: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                padding: 9px 10px;
+                color: var(--text);
+                font-size: 0.875rem;
+                font-family: inherit;
+                outline: none;
+                resize: none;
+                transition: border-color 0.15s;
+                width: 100%;
+            }
+            .field input:focus,
+            .field textarea:focus,
+            .field select:focus {
+                border-color: var(--accent);
+            }
+            .field input.err {
+                border-color: var(--red);
+            }
+            .ferr {
+                font-size: 0.73rem;
+                color: var(--red);
+                min-height: 1em;
+            }
+
+            /* ════════════════════════════════════════
+   MODAIS
+════════════════════════════════════════ */
+            .modal-bg {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.65);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 100;
+                backdrop-filter: blur(4px);
+                padding: 20px;
+            }
+            .modal-bg.hidden {
+                display: none;
+            }
+            .modal-box {
+                background: var(--sidebar-bg);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                width: 100%;
+                max-width: 480px;
+                padding: 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 18px;
+                box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+                animation: modal-in 0.2s ease;
+            }
+            .modal-sm {
+                max-width: 360px;
+            }
+            @keyframes modal-in {
+                from {
+                    transform: scale(0.95) translateY(-8px);
+                    opacity: 0;
+                }
+                to {
+                    transform: scale(1) translateY(0);
+                    opacity: 1;
+                }
+            }
+            .modal-hdr {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .modal-hdr h2 {
+                font-size: 1rem;
+                font-weight: 700;
+            }
+            .btn-close {
+                background: none;
+                border: none;
+                color: var(--text-muted);
+                cursor: pointer;
+                font-size: 0.9rem;
+                padding: 4px 8px;
+                border-radius: 4px;
+                transition:
+                    background 0.12s,
+                    color 0.12s;
+            }
+            .btn-close:hover {
+                background: rgba(255, 255, 255, 0.07);
+                color: var(--text);
+            }
+            #form-bm {
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+            }
+            .modal-ftr {
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+            }
+            .confirm-msg {
+                font-size: 0.875rem;
+                color: var(--text-dim);
+                line-height: 1.5;
+            }
+            .cat-new-row {
+                display: flex;
+                gap: 8px;
+            }
+            .cat-new-row input {
+                flex: 1;
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                padding: 8px 10px;
+                color: var(--text);
+                font-size: 0.875rem;
+                outline: none;
+                transition: border-color 0.15s;
+            }
+            .cat-new-row input:focus {
+                border-color: var(--accent);
+            }
+            #cat-manage-list {
+                list-style: none;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                max-height: 300px;
+                overflow-y: auto;
+            }
+            .cmi {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 12px;
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                font-size: 0.875rem;
+            }
+            .cmi.default {
+                opacity: 0.55;
+            }
+            .cmi-label {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .cmi-count {
+                font-size: 0.73rem;
+                color: var(--text-muted);
+            }
+            .btn-del-cat {
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: var(--text-muted);
+                font-size: 0.8rem;
+                padding: 3px 6px;
+                border-radius: 4px;
+                line-height: 1;
+                transition:
+                    background 0.12s,
+                    color 0.12s;
+            }
+            .btn-del-cat:not(:disabled):hover {
+                background: rgba(248, 81, 73, 0.15);
+                color: var(--red);
+            }
+            .btn-del-cat:disabled {
+                opacity: 0.3;
+                cursor: default;
+            }
+
+            /* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+            .toast {
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                padding: 11px 18px;
+                background: #1c2128;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                color: var(--text);
+                font-size: 0.84rem;
+                max-width: 300px;
+                transform: translateY(14px);
+                opacity: 0;
+                transition:
+                    transform 0.25s,
+                    opacity 0.25s;
+                z-index: 999;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+                pointer-events: none;
+            }
+            .toast.show {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            .toast.t-ok {
+                border-color: var(--green);
+            }
+            .toast.t-err {
+                border-color: var(--red);
+            }
+            .toast.t-info {
+                border-color: var(--accent);
+            }
+
+            /* ════════════════════════════════════════
+   UTILITÁRIOS
+════════════════════════════════════════ */
+            ::-webkit-scrollbar {
+                width: 5px;
+            }
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #30363d;
+                border-radius: 3px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: var(--text-muted);
+            }
+            .hidden {
+                display: none !important;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- ══════════════════════════════════════
+     LOGIN VIEW
+══════════════════════════════════════ -->
+        <div id="v-login" class="hidden">
+            <div class="login-card">
+                <div class="login-brand">
+                    <span class="lbemoji">🔖</span>
+                    <h1>Bookmarks</h1>
+                    <p>Seus links salvos, sempre à mão</p>
+                </div>
+
+                <div class="tabs">
+                    <button id="tab-login" class="tab active">Entrar</button>
+                    <button id="tab-register" class="tab">Criar conta</button>
+                </div>
+
+                <form id="form-auth" novalidate>
+                    <div class="field">
+                        <label for="auth-email">E-mail</label>
+                        <input
+                            id="auth-email"
+                            type="email"
+                            placeholder="seu@email.com"
+                            autocomplete="email"
+                        />
+                    </div>
+                    <div class="field">
+                        <label for="auth-pass">Senha</label>
+                        <div class="pass-wrap">
+                            <input
+                                id="auth-pass"
+                                type="password"
+                                placeholder="mínimo 6 caracteres"
+                                autocomplete="current-password"
+                            />
+                            <button
+                                type="button"
+                                id="btn-eye"
+                                class="btn-eye"
+                                title="Mostrar senha"
+                            >
+                                👁
+                            </button>
+                        </div>
+                    </div>
+                    <div id="auth-error" class="auth-error hidden"></div>
+                    <button type="submit" id="btn-auth" class="btn-auth">
+                        <span id="auth-label">Entrar</span>
+                    </button>
+                </form>
+
+                <p class="login-note">
+                    Dados sincronizados em tempo real via Firebase.
+                </p>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+     APP VIEW
+══════════════════════════════════════ -->
+        <div id="v-app" class="hidden">
+            <aside id="sidebar">
+                <div class="brand">
+                    <span>🔖</span>
+                    <span class="brand-name">Bookmarks</span>
+                </div>
+                <button id="btn-new" class="btn-new">
+                    <span>+</span> Novo Bookmark
+                </button>
+                <nav class="sidebar-nav">
+                    <p class="nav-label">Categorias</p>
+                    <ul id="cat-nav"></ul>
+                </nav>
+                <div class="sidebar-footer">
+                    <button id="btn-manage-cats" class="btn-manage">
+                        ⚙ Gerenciar Categorias
+                    </button>
+                    <div class="user-row">
+                        <span id="user-name" class="user-name"></span>
+                        <button id="btn-logout" class="btn-logout">
+                            ↪ Sair
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <div id="main">
+                <div id="topbar">
+                    <div class="search-wrap">
+                        <svg
+                            class="ico-search"
+                            viewBox="0 0 16 16"
+                            fill="currentColor"
+                        >
+                            <path
+                                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"
+                            />
+                        </svg>
+                        <input
+                            id="search-input"
+                            type="text"
+                            placeholder="Buscar por título, URL… (Ctrl+K)"
+                        />
+                        <button id="btn-clear" class="btn-clear hidden">
+                            ✕
+                        </button>
+                    </div>
+                    <div class="topbar-right">
+                        <select id="sort-select">
+                            <option value="newest">Mais recentes</option>
+                            <option value="oldest">Mais antigos</option>
+                            <option value="alpha">A – Z</option>
+                        </select>
+                        <div class="view-btns">
+                            <button
+                                id="btn-grid"
+                                class="vbtn active"
+                                title="Grade"
+                            >
+                                <svg viewBox="0 0 16 16" fill="currentColor">
+                                    <path
+                                        d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5zm8 0A1.5 1.5 0 0 1 10.5 9h3A1.5 1.5 0 0 1 15 10.5v3A1.5 1.5 0 0 1 13.5 15h-3A1.5 1.5 0 0 1 9 13.5z"
+                                    />
+                                </svg>
+                            </button>
+                            <button id="btn-list" class="vbtn" title="Lista">
+                                <svg viewBox="0 0 16 16" fill="currentColor">
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="results-bar"><span id="results-count"></span></div>
+                <div id="bm-container" class="view-grid"></div>
+
+                <div id="empty-state" class="hidden">
+                    <div class="empty-icon">🔖</div>
+                    <h3>Nenhum bookmark encontrado</h3>
+                    <p id="empty-sub">
+                        Clique em <strong>+ Novo Bookmark</strong> para começar.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+     MODAL: Novo / Editar Bookmark
+══════════════════════════════════════ -->
+        <div id="modal-bm" class="modal-bg hidden">
+            <div class="modal-box">
+                <div class="modal-hdr">
+                    <h2 id="modal-bm-title">Novo Bookmark</h2>
+                    <button class="btn-close" data-close="modal-bm">✕</button>
+                </div>
+                <form id="form-bm" novalidate>
+                    <div class="field">
+                        <label>URL <span class="req">*</span></label>
+                        <input
+                            id="f-url"
+                            type="url"
+                            placeholder="https://exemplo.com"
+                            autocomplete="off"
+                        />
+                        <span class="ferr" id="err-url"></span>
+                    </div>
+                    <div class="field">
+                        <label>Título <span class="req">*</span></label>
+                        <input
+                            id="f-title"
+                            type="text"
+                            placeholder="Nome do bookmark"
+                            autocomplete="off"
+                        />
+                        <span class="ferr" id="err-title"></span>
+                    </div>
+                    <div class="field">
+                        <label>Descrição</label>
+                        <textarea
+                            id="f-desc"
+                            rows="2"
+                            placeholder="Descrição opcional…"
+                        ></textarea>
+                    </div>
+                    <div class="field">
+                        <label>Categoria</label>
+                        <select id="f-cat"></select>
+                    </div>
+                    <div class="modal-ftr">
+                        <button
+                            type="button"
+                            class="btn-secondary"
+                            data-close="modal-bm"
+                        >
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+     MODAL: Gerenciar Categorias
+══════════════════════════════════════ -->
+        <div id="modal-cats" class="modal-bg hidden">
+            <div class="modal-box">
+                <div class="modal-hdr">
+                    <h2>Gerenciar Categorias</h2>
+                    <button class="btn-close" data-close="modal-cats">✕</button>
+                </div>
+                <div class="cat-new-row">
+                    <input
+                        id="new-cat-input"
+                        type="text"
+                        placeholder="Nome da nova categoria…"
+                        maxlength="30"
+                    />
+                    <button id="btn-add-cat" class="btn-primary">
+                        Adicionar
+                    </button>
+                </div>
+                <ul id="cat-manage-list"></ul>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+     MODAL: Confirmar Exclusão
+══════════════════════════════════════ -->
+        <div id="modal-confirm" class="modal-bg hidden">
+            <div class="modal-box modal-sm">
+                <div class="modal-hdr"><h2>Confirmar exclusão</h2></div>
+                <p id="confirm-msg" class="confirm-msg"></p>
+                <div class="modal-ftr">
+                    <button id="btn-cancel" class="btn-secondary">
+                        Cancelar
+                    </button>
+                    <button id="btn-confirm" class="btn-danger">Excluir</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading overlay -->
+        <div
+            id="loading-overlay"
+            style="
+                position: fixed;
+                inset: 0;
+                background: #0d1117;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 14px;
+                z-index: 200;
+                color: #484f58;
+                font-size: 0.875rem;
+                font-family: inherit;
+            "
+        >
+            <div
+                style="
+                    width: 36px;
+                    height: 36px;
+                    border: 3px solid #30363d;
+                    border-top-color: #388bfd;
+                    border-radius: 50%;
+                    animation: spin 0.8s linear infinite;
+                "
+            ></div>
+            <span id="loading-msg">Conectando…</span>
+        </div>
+        <style>
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+        </style>
+
+        <!-- Firebase SDK -->
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+        <script>
+            /* ════════════════════════════════════════════════════════
+               ⚙  FIREBASE CONFIG — preencha com seus dados
+               (Configurações do Projeto → Web → firebaseConfig)
+            ════════════════════════════════════════════════════════ */
+            var FIREBASE_CONFIG = {
+                apiKey: "AIzaSyBBjVoUKcajtni9gV-b50GLf9vRM4QK5Xg",
+                authDomain: "trabalho-rose.firebaseapp.com",
+                projectId: "trabalho-rose",
+                storageBucket: "trabalho-rose.firebasestorage.app",
+                messagingSenderId: "949718428814",
+                appId: "1:949718428814:web:f4dfd516a2430e573baddf",
+            };
+            /* ════════════════════════════════════════════════════════ */
+
+            // ── Verificação de config ──────────────────────────────────
+            if (FIREBASE_CONFIG.apiKey === "SUA_API_KEY") {
+                document.getElementById("loading-msg").innerHTML =
+                    "⚙ Preencha o FIREBASE_CONFIG no arquivo index.html";
+                throw new Error("Firebase config não configurado");
+            }
+
+            // ── Init Firebase ─────────────────────────────────────────────
+            firebase.initializeApp(FIREBASE_CONFIG);
+            var auth = firebase.auth();
+            var db = firebase.firestore();
+
+            // ── Constants & State ─────────────────────────────────────────
+            var DEFAULT_CAT = "Geral";
+            var CAT_COLORS = [
+                "#388bfd",
+                "#3fb950",
+                "#f85149",
+                "#d29922",
+                "#bc8cff",
+                "#79c0ff",
+                "#56d364",
+                "#ffa657",
+                "#e3b341",
+                "#db6d28",
+            ];
+            var S = {
+                bookmarks: [],
+                categories: [],
+                filter: "all",
+                search: "",
+                sort: "newest",
+                view: "grid",
+                editId: null,
+            };
+            var userId = null,
+                unsubBM = null,
+                unsubCat = null,
+                _confirmCb = null,
+                authMode = "login";
+
+            // ── Auth state ────────────────────────────────────────────────
+            auth.onAuthStateChanged(function (user) {
+                if (user) {
+                    userId = user.uid;
+                    document.getElementById("user-name").textContent =
+                        user.email;
+                    document.getElementById("v-login").classList.add("hidden");
+                    document.getElementById("v-app").classList.remove("hidden");
+                    subscribeToData();
+                } else {
+                    userId = null;
+                    document.getElementById("v-app").classList.add("hidden");
+                    document
+                        .getElementById("v-login")
+                        .classList.remove("hidden");
+                    document
+                        .getElementById("loading-overlay")
+                        .classList.add("hidden");
+                }
+            });
+
+            // ── Firestore listeners (tempo real) ──────────────────────────
+            function subscribeToData() {
+                unsubCat = db
+                    .collection("users")
+                    .doc(userId)
+                    .collection("settings")
+                    .doc("data")
+                    .onSnapshot(
+                        function (snap) {
+                            if (snap.exists) {
+                                S.categories = snap.data().categories || [
+                                    DEFAULT_CAT,
+                                ];
+                            } else {
+                                S.categories = [DEFAULT_CAT];
+                                db.collection("users")
+                                    .doc(userId)
+                                    .collection("settings")
+                                    .doc("data")
+                                    .set({ categories: [DEFAULT_CAT] });
+                            }
+                            renderSidebar();
+                        },
+                        function (err) {
+                            toast("Erro categorias: " + err.message, "err");
+                        },
+                    );
+
+                unsubBM = db
+                    .collection("users")
+                    .doc(userId)
+                    .collection("bookmarks")
+                    .onSnapshot(
+                        function (snap) {
+                            S.bookmarks = snap.docs.map(function (d) {
+                                return Object.assign({ id: d.id }, d.data());
+                            });
+                            document
+                                .getElementById("loading-overlay")
+                                .classList.add("hidden");
+                            renderSidebar();
+                            renderBookmarks();
+                        },
+                        function (err) {
+                            toast("Erro bookmarks: " + err.message, "err");
+                        },
+                    );
+            }
+
+            // ── Helpers Firestore ─────────────────────────────────────────
+            function bmCol() {
+                return db
+                    .collection("users")
+                    .doc(userId)
+                    .collection("bookmarks");
+            }
+            function settingsDoc() {
+                return db
+                    .collection("users")
+                    .doc(userId)
+                    .collection("settings")
+                    .doc("data");
+            }
+
+            // ── CRUD ──────────────────────────────────────────────────────
+            function createBookmark(data) {
+                return bmCol().add({
+                    title: data.title.trim(),
+                    url: data.url.trim(),
+                    description: (data.description || "").trim(),
+                    category: data.category,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                });
+            }
+            function updateBookmark(id, data) {
+                return bmCol()
+                    .doc(id)
+                    .update({
+                        title: data.title.trim(),
+                        url: data.url.trim(),
+                        description: (data.description || "").trim(),
+                        category: data.category,
+                        updatedAt: new Date().toISOString(),
+                    });
+            }
+            function deleteBookmark(id) {
+                return bmCol().doc(id).delete();
+            }
+            function saveCategories(cats) {
+                return settingsDoc().set({ categories: cats });
+            }
+            function createCategory(name) {
+                name = name.trim();
+                if (!name)
+                    return Promise.resolve({
+                        ok: false,
+                        msg: "Nome não pode ser vazio.",
+                    });
+                if (S.categories.indexOf(name) >= 0)
+                    return Promise.resolve({
+                        ok: false,
+                        msg: '"' + name + '" já existe.',
+                    });
+                if (name.length > 30)
+                    return Promise.resolve({
+                        ok: false,
+                        msg: "Máximo de 30 caracteres.",
+                    });
+                return saveCategories(S.categories.concat([name])).then(
+                    function () {
+                        return { ok: true };
+                    },
+                );
+            }
+            function deleteCategory(name) {
+                if (name === DEFAULT_CAT) return Promise.resolve();
+                var batch = db.batch();
+                var newCats = S.categories.filter(function (c) {
+                    return c !== name;
+                });
+                S.bookmarks.forEach(function (b) {
+                    if (b.category === name)
+                        batch.update(bmCol().doc(b.id), {
+                            category: DEFAULT_CAT,
+                        });
+                });
+                batch.set(settingsDoc(), { categories: newCats });
+                if (S.filter === name) S.filter = "all";
+                return batch.commit();
+            }
+
+            // ── Logout ────────────────────────────────────────────────────
+            function doLogout() {
+                if (unsubBM) unsubBM();
+                if (unsubCat) unsubCat();
+                S.bookmarks = [];
+                S.categories = [];
+                auth.signOut();
+            }
+
+            // ── (bloco localStorage removido — Firebase acima) ──
+            var Auth = {
+                // shim vazio — não usado com Firebase
+                // Retorna todos os usuários cadastrados
+                accounts: function () {
+                    return JSON.parse(
+                        localStorage.getItem("bmgr_accounts") || "{}",
+                    );
+                },
+                saveAccounts: function (a) {
+                    localStorage.setItem("bmgr_accounts", JSON.stringify(a));
+                },
+
+                // Sessão persistente (sobrevive a fechar o browser)
+                session: function () {
+                    try {
+                        return JSON.parse(
+                            localStorage.getItem("bmgr_session") || "null",
+                        );
+                    } catch (e) {
+                        return null;
+                    }
+                },
+                setSession: function (s) {
+                    localStorage.setItem("bmgr_session", JSON.stringify(s));
+                },
+                clearSession: function () {
+                    localStorage.removeItem("bmgr_session");
+                },
+
+                login: function (username, password) {
+                    var key = username.trim().toLowerCase();
+                    if (!key)
+                        return { ok: false, msg: "Informe o nome de usuário." };
+                    var acc = this.accounts();
+                    if (!acc[key])
+                        return { ok: false, msg: "Usuário não encontrado." };
+                    if (acc[key].hash !== hashPwd(password))
+                        return { ok: false, msg: "Senha incorreta." };
+                    this.setSession({ username: key, userId: acc[key].id });
+                    return { ok: true };
+                },
+
+                register: function (username, password) {
+                    var key = username.trim().toLowerCase();
+                    if (key.length < 3)
+                        return {
+                            ok: false,
+                            msg: "Usuário deve ter pelo menos 3 caracteres.",
+                        };
+                    if (password.length < 6)
+                        return {
+                            ok: false,
+                            msg: "Senha deve ter pelo menos 6 caracteres.",
+                        };
+                    var acc = this.accounts();
+                    if (acc[key])
+                        return {
+                            ok: false,
+                            msg: 'Usuário "' + key + '" já existe. Faça login.',
+                        };
+                    var userId = "u_" + Date.now().toString(36);
+                    acc[key] = {
+                        id: userId,
+                        hash: hashPwd(password),
+                        createdAt: new Date().toISOString(),
+                    };
+                    this.saveAccounts(acc);
+                    this.setSession({ username: key, userId: userId });
+                    return { ok: true };
+                },
+
+                logout: function () {},
+            };
+
+            /* ════════════════════════════════════════════════════════════
+               HELPERS
+            ════════════════════════════════════════════════════════════ */
+            function getFavicon(url) {
+                try {
+                    return (
+                        "https://www.google.com/s2/favicons?domain=" +
+                        new URL(url).hostname +
+                        "&sz=32"
+                    );
+                } catch (e) {
+                    return "";
+                }
+            }
+            function getDomain(url) {
+                try {
+                    return new URL(url).hostname.replace(/^www\./, "");
+                } catch (e) {
+                    return url;
+                }
+            }
+            function catColor(name) {
+                var h = 0;
+                for (var i = 0; i < name.length; i++)
+                    h = (h * 31 + name.charCodeAt(i)) >>> 0;
+                return CAT_COLORS[h % CAT_COLORS.length];
+            }
+            function catCount(name) {
+                return S.bookmarks.filter(function (b) {
+                    return b.category === name;
+                }).length;
+            }
+            function getFiltered() {
+                var list = S.bookmarks.filter(function (b) {
+                    if (S.filter !== "all" && b.category !== S.filter)
+                        return false;
+                    if (S.search) {
+                        var q = S.search.toLowerCase();
+                        return (
+                            b.title.toLowerCase().indexOf(q) >= 0 ||
+                            b.url.toLowerCase().indexOf(q) >= 0 ||
+                            (b.description || "").toLowerCase().indexOf(q) >= 0
+                        );
+                    }
+                    return true;
+                });
+                if (S.sort === "oldest")
+                    list.sort(function (a, b) {
+                        return a.createdAt < b.createdAt ? -1 : 1;
+                    });
+                else if (S.sort === "alpha")
+                    list.sort(function (a, b) {
+                        return a.title.localeCompare(b.title, "pt");
+                    });
+                else
+                    list.sort(function (a, b) {
+                        return a.createdAt > b.createdAt ? -1 : 1;
+                    });
+                return list;
+            }
+            function esc(s) {
+                return String(s)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;");
+            }
+            function validateURL(url) {
+                if (!url) return "URL é obrigatória.";
+                try {
+                    new URL(url);
+                    return "";
+                } catch (e) {
+                    return "URL inválida — inclua https://";
+                }
+            }
+
+            /* ════════════════════════════════════════════════════════════
+               RENDER
+            ════════════════════════════════════════════════════════════ */
+            function renderSidebar() {
+                var ul = document.getElementById("cat-nav");
+                ul.innerHTML = "";
+                function row(value, label, count, color) {
+                    var li = document.createElement("li");
+                    li.className =
+                        "cat-item" + (S.filter === value ? " active" : "");
+                    li.dataset.cat = value;
+                    li.innerHTML =
+                        '<span class="cat-dot" style="background:' +
+                        color +
+                        '"></span>' +
+                        "<span>" +
+                        label +
+                        "</span>" +
+                        '<span class="cat-count">' +
+                        count +
+                        "</span>";
+                    li.addEventListener("click", function () {
+                        S.filter = value;
+                        renderSidebar();
+                        renderBookmarks();
+                    });
+                    ul.appendChild(li);
+                }
+                row("all", "Todos", S.bookmarks.length, "#7d8590");
+                S.categories.forEach(function (c) {
+                    row(c, c, catCount(c), catColor(c));
+                });
+            }
+
+            function renderBookmarks() {
+                var box = document.getElementById("bm-container");
+                var empty = document.getElementById("empty-state");
+                var cntEl = document.getElementById("results-count");
+                box.className = "view-" + S.view;
+                var list = getFiltered();
+                cntEl.textContent = list.length
+                    ? list.length +
+                      " bookmark" +
+                      (list.length > 1 ? "s" : "") +
+                      (S.search ? ' para "' + S.search + '"' : "")
+                    : "";
+                if (!list.length) {
+                    box.innerHTML = "";
+                    empty.classList.remove("hidden");
+                    document.getElementById("empty-sub").innerHTML = S.search
+                        ? 'Nenhum resultado para <strong>"' +
+                          esc(S.search) +
+                          '"</strong>.'
+                        : "Clique em <strong>+ Novo Bookmark</strong> para começar.";
+                    return;
+                }
+                empty.classList.add("hidden");
+                box.innerHTML = list
+                    .map(S.view === "grid" ? cardHTML : rowHTML)
+                    .join("");
+            }
+
+            function cardHTML(bm) {
+                var fav = getFavicon(bm.url),
+                    dom = getDomain(bm.url),
+                    col = catColor(bm.category),
+                    ltr = bm.title.charAt(0).toUpperCase();
+                return (
+                    '<div class="bm-card" data-id="' +
+                    bm.id +
+                    '">' +
+                    '<div class="card-top">' +
+                    '<img class="card-fav" src="' +
+                    fav +
+                    '" alt="" onerror="this.classList.add(\'hidden\');this.nextElementSibling.classList.remove(\'hidden\')">' +
+                    '<div class="card-fav-fb hidden">' +
+                    ltr +
+                    "</div>" +
+                    '<div class="card-text">' +
+                    '<a class="card-title" href="' +
+                    esc(bm.url) +
+                    '" target="_blank" rel="noopener">' +
+                    esc(bm.title) +
+                    "</a>" +
+                    '<div class="card-domain">' +
+                    dom +
+                    "</div>" +
+                    "</div>" +
+                    "</div>" +
+                    (bm.description
+                        ? '<p class="card-desc">' + esc(bm.description) + "</p>"
+                        : "") +
+                    '<div class="card-foot">' +
+                    '<span class="cat-tag"><span class="cat-dot" style="background:' +
+                    col +
+                    '"></span><span>' +
+                    esc(bm.category) +
+                    "</span></span>" +
+                    '<div class="card-actions">' +
+                    '<button class="btn-icon edit" data-id="' +
+                    bm.id +
+                    '" title="Editar">✏</button>' +
+                    '<button class="btn-icon del"  data-id="' +
+                    bm.id +
+                    '" title="Excluir">🗑</button>' +
+                    "</div>" +
+                    "</div></div>"
+                );
+            }
+
+            function rowHTML(bm) {
+                var fav = getFavicon(bm.url),
+                    dom = getDomain(bm.url),
+                    col = catColor(bm.category),
+                    ltr = bm.title.charAt(0).toUpperCase();
+                return (
+                    '<div class="bm-row" data-id="' +
+                    bm.id +
+                    '">' +
+                    '<img class="row-fav" src="' +
+                    fav +
+                    '" alt="" onerror="this.classList.add(\'hidden\');this.nextElementSibling.classList.remove(\'hidden\')">' +
+                    '<div class="card-fav-fb hidden" style="width:16px;height:16px;font-size:9px;flex-shrink:0">' +
+                    ltr +
+                    "</div>" +
+                    '<a class="row-title" href="' +
+                    esc(bm.url) +
+                    '" target="_blank" rel="noopener">' +
+                    esc(bm.title) +
+                    "</a>" +
+                    '<span class="row-domain">' +
+                    dom +
+                    "</span>" +
+                    '<span class="cat-tag"><span class="cat-dot" style="background:' +
+                    col +
+                    '"></span><span>' +
+                    esc(bm.category) +
+                    "</span></span>" +
+                    '<div class="card-actions">' +
+                    '<button class="btn-icon edit" data-id="' +
+                    bm.id +
+                    '" title="Editar">✏</button>' +
+                    '<button class="btn-icon del"  data-id="' +
+                    bm.id +
+                    '" title="Excluir">🗑</button>' +
+                    "</div></div>"
+                );
+            }
+
+            function renderCatModal() {
+                var ul = document.getElementById("cat-manage-list");
+                ul.innerHTML = "";
+                S.categories.forEach(function (cat) {
+                    var cnt = catCount(cat),
+                        isD = cat === DEFAULT_CAT,
+                        li = document.createElement("li");
+                    li.className = "cmi" + (isD ? " default" : "");
+                    li.innerHTML =
+                        '<span class="cmi-label"><span class="cat-dot" style="background:' +
+                        catColor(cat) +
+                        '"></span><span>' +
+                        esc(cat) +
+                        "</span></span>" +
+                        '<span class="cmi-count">' +
+                        cnt +
+                        " BM" +
+                        (cnt !== 1 ? "s" : "") +
+                        "</span>" +
+                        '<button class="btn-del-cat" data-cat="' +
+                        esc(cat) +
+                        '"' +
+                        (isD ? " disabled" : "") +
+                        ">🗑</button>";
+                    ul.appendChild(li);
+                });
+            }
+
+            function populateCatSelect(selected) {
+                document.getElementById("f-cat").innerHTML = S.categories
+                    .map(function (c) {
+                        return (
+                            '<option value="' +
+                            c +
+                            '"' +
+                            (c === selected ? " selected" : "") +
+                            ">" +
+                            c +
+                            "</option>"
+                        );
+                    })
+                    .join("");
+            }
+
+            /* ════════════════════════════════════════════════════════════
+               MODALS & TOAST
+            ════════════════════════════════════════════════════════════ */
+            function openModal(id) {
+                document.getElementById(id).classList.remove("hidden");
+            }
+            function closeModal(id) {
+                document.getElementById(id).classList.add("hidden");
+            }
+
+            function openBookmarkModal(bm) {
+                S.editId = bm ? bm.id : null;
+                document.getElementById("modal-bm-title").textContent = bm
+                    ? "Editar Bookmark"
+                    : "Novo Bookmark";
+                document.getElementById("f-url").value = bm ? bm.url : "";
+                document.getElementById("f-title").value = bm ? bm.title : "";
+                document.getElementById("f-desc").value = bm
+                    ? bm.description || ""
+                    : "";
+                ["f-url", "f-title"].forEach(function (id) {
+                    document.getElementById(id).classList.remove("err");
+                });
+                ["err-url", "err-title"].forEach(function (id) {
+                    document.getElementById(id).textContent = "";
+                });
+                populateCatSelect(
+                    bm
+                        ? bm.category
+                        : S.filter !== "all"
+                          ? S.filter
+                          : DEFAULT_CAT,
+                );
+                openModal("modal-bm");
+                setTimeout(function () {
+                    document.getElementById("f-url").focus();
+                }, 60);
+            }
+
+            function openConfirm(msg, cb) {
+                _confirmCb = cb;
+                document.getElementById("confirm-msg").textContent = msg;
+                openModal("modal-confirm");
+            }
+
+            function toast(msg, type) {
+                var el = document.createElement("div");
+                el.className = "toast t-" + (type || "ok");
+                el.textContent = msg;
+                document.body.appendChild(el);
+                requestAnimationFrame(function () {
+                    requestAnimationFrame(function () {
+                        el.classList.add("show");
+                    });
+                });
+                setTimeout(function () {
+                    el.classList.remove("show");
+                    setTimeout(function () {
+                        el.remove();
+                    }, 300);
+                }, 2800);
+            }
+
+            /* ════════════════════════════════════════════════════════════
+               SHOW / HIDE VIEWS
+            ════════════════════════════════════════════════════════════ */
+            // showLogin/showApp tratados pelo onAuthStateChanged acima
+            function showApp(session) {
+                // compat shim — não usado diretamente com Firebase
+                document.getElementById("search-input").value = "";
+                document.getElementById("btn-clear").classList.add("hidden");
+                renderSidebar();
+                renderBookmarks();
+            }
+
+            /* ════════════════════════════════════════════════════════════
+               INICIALIZAÇÃO  —  verifica sessão salva
+            ════════════════════════════════════════════════════════════ */
+            // init: Firebase onAuthStateChanged já cuida da inicialização
+
+            /* ════════════════════════════════════════════════════════════
+               EVENTOS: LOGIN
+            ════════════════════════════════════════════════════════════ */
+            document
+                .getElementById("tab-login")
+                .addEventListener("click", function () {
+                    setAuthMode("login");
+                });
+            document
+                .getElementById("tab-register")
+                .addEventListener("click", function () {
+                    setAuthMode("register");
+                });
+
+            function setAuthMode(mode) {
+                authMode = mode;
+                document
+                    .getElementById("tab-login")
+                    .classList.toggle("active", mode === "login");
+                document
+                    .getElementById("tab-register")
+                    .classList.toggle("active", mode === "register");
+                document.getElementById("auth-label").textContent =
+                    mode === "login" ? "Entrar" : "Criar conta";
+                document.getElementById("auth-error").classList.add("hidden");
+                document
+                    .getElementById("auth-pass")
+                    .setAttribute(
+                        "autocomplete",
+                        mode === "login" ? "current-password" : "new-password",
+                    );
+            }
+
+            document
+                .getElementById("btn-eye")
+                .addEventListener("click", function () {
+                    var inp = document.getElementById("auth-pass");
+                    inp.type = inp.type === "password" ? "text" : "password";
+                });
+
+            document
+                .getElementById("form-auth")
+                .addEventListener("submit", function (e) {
+                    e.preventDefault();
+                    var email = document
+                        .getElementById("auth-email")
+                        .value.trim();
+                    var password = document.getElementById("auth-pass").value;
+                    var errEl = document.getElementById("auth-error");
+                    if (!email || !password) return;
+
+                    var btn = document.getElementById("btn-auth");
+                    btn.disabled = true;
+                    errEl.classList.add("hidden");
+
+                    var p =
+                        authMode === "login"
+                            ? auth.signInWithEmailAndPassword(email, password)
+                            : auth.createUserWithEmailAndPassword(
+                                  email,
+                                  password,
+                              );
+
+                    var msgs = {
+                        "auth/user-not-found": "E-mail não cadastrado.",
+                        "auth/wrong-password": "Senha incorreta.",
+                        "auth/invalid-email": "E-mail inválido.",
+                        "auth/invalid-credential":
+                            "E-mail ou senha incorretos.",
+                        "auth/email-already-in-use":
+                            "E-mail já cadastrado. Faça login.",
+                        "auth/weak-password":
+                            "Senha muito fraca (mínimo 6 caracteres).",
+                        "auth/too-many-requests":
+                            "Muitas tentativas. Aguarde alguns minutos.",
+                        "auth/network-request-failed": "Erro de conexão.",
+                    };
+                    p.catch(function (err) {
+                        errEl.textContent =
+                            msgs[err.code] || "Erro: " + err.message;
+                        errEl.classList.remove("hidden");
+                        btn.disabled = false;
+                    }); // sucesso: onAuthStateChanged redireciona
+                });
+
+            /* ════════════════════════════════════════════════════════════
+               EVENTOS: APP
+            ════════════════════════════════════════════════════════════ */
+            document
+                .getElementById("btn-new")
+                .addEventListener("click", function () {
+                    openBookmarkModal(null);
+                });
+
+            document
+                .getElementById("btn-logout")
+                .addEventListener("click", function () {
+                    doLogout();
+                });
+
+            var searchEl = document.getElementById("search-input");
+            var clearBtn = document.getElementById("btn-clear");
+            searchEl.addEventListener("input", function () {
+                S.search = this.value;
+                clearBtn.classList.toggle("hidden", !S.search);
+                renderBookmarks();
+            });
+            clearBtn.addEventListener("click", function () {
+                S.search = searchEl.value = "";
+                clearBtn.classList.add("hidden");
+                searchEl.focus();
+                renderBookmarks();
+            });
+
+            document
+                .getElementById("sort-select")
+                .addEventListener("change", function () {
+                    S.sort = this.value;
+                    renderBookmarks();
+                });
+
+            document
+                .getElementById("btn-grid")
+                .addEventListener("click", function () {
+                    S.view = "grid";
+                    this.classList.add("active");
+                    document
+                        .getElementById("btn-list")
+                        .classList.remove("active");
+                    renderBookmarks();
+                });
+            document
+                .getElementById("btn-list")
+                .addEventListener("click", function () {
+                    S.view = "list";
+                    this.classList.add("active");
+                    document
+                        .getElementById("btn-grid")
+                        .classList.remove("active");
+                    renderBookmarks();
+                });
+
+            document
+                .getElementById("btn-manage-cats")
+                .addEventListener("click", function () {
+                    renderCatModal();
+                    openModal("modal-cats");
+                    setTimeout(function () {
+                        document.getElementById("new-cat-input").focus();
+                    }, 60);
+                });
+
+            document.querySelectorAll("[data-close]").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    closeModal(this.dataset.close);
+                });
+            });
+            document.querySelectorAll(".modal-bg").forEach(function (bg) {
+                bg.addEventListener("click", function (e) {
+                    if (e.target === this) closeModal(this.id);
+                });
+            });
+
+            document
+                .getElementById("form-bm")
+                .addEventListener("submit", function (e) {
+                    e.preventDefault();
+                    var url = document.getElementById("f-url").value.trim();
+                    var title = document.getElementById("f-title").value.trim();
+                    var desc = document.getElementById("f-desc").value.trim();
+                    var cat = document.getElementById("f-cat").value;
+
+                    var ok = true,
+                        uErr = validateURL(url);
+                    if (uErr) {
+                        document.getElementById("err-url").textContent = uErr;
+                        document.getElementById("f-url").classList.add("err");
+                        ok = false;
+                    } else {
+                        document.getElementById("err-url").textContent = "";
+                        document
+                            .getElementById("f-url")
+                            .classList.remove("err");
+                    }
+                    if (!title) {
+                        document.getElementById("err-title").textContent =
+                            "Título é obrigatório.";
+                        document.getElementById("f-title").classList.add("err");
+                        ok = false;
+                    } else {
+                        document.getElementById("err-title").textContent = "";
+                        document
+                            .getElementById("f-title")
+                            .classList.remove("err");
+                    }
+                    if (!ok) return;
+
+                    var data = {
+                        url: url,
+                        title: title,
+                        description: desc,
+                        category: cat,
+                    };
+                    // Firestore é assíncrono; onSnapshot atualiza o render
+                    var submitBtn = document.querySelector(
+                        '#form-bm [type="submit"]',
+                    );
+                    submitBtn.disabled = true;
+                    var isEdit = !!S.editId;
+                    var p = isEdit
+                        ? updateBookmark(S.editId, data)
+                        : createBookmark(data);
+                    p.then(function () {
+                        toast(
+                            isEdit
+                                ? "Bookmark atualizado!"
+                                : "Bookmark adicionado! 🔖",
+                            isEdit ? "info" : "ok",
+                        );
+                        closeModal("modal-bm");
+                    })
+                        .catch(function (err) {
+                            toast("Erro ao salvar: " + err.message, "err");
+                        })
+                        .then(function () {
+                            submitBtn.disabled = false;
+                        });
+                });
+
+            document
+                .getElementById("f-url")
+                .addEventListener("blur", function () {
+                    var t = document.getElementById("f-title");
+                    if (t.value) return;
+                    var d = getDomain(this.value);
+                    if (d && d !== this.value)
+                        t.value = d.charAt(0).toUpperCase() + d.slice(1);
+                });
+
+            document
+                .getElementById("bm-container")
+                .addEventListener("click", function (e) {
+                    var btn = e.target.closest(".btn-icon");
+                    if (!btn) return;
+                    var id = btn.dataset.id;
+                    if (btn.classList.contains("edit")) {
+                        var bm = S.bookmarks.find(function (b) {
+                            return b.id === id;
+                        });
+                        if (bm) openBookmarkModal(bm);
+                    } else if (btn.classList.contains("del")) {
+                        var bm2 = S.bookmarks.find(function (b) {
+                            return b.id === id;
+                        });
+                        if (!bm2) return;
+                        openConfirm(
+                            'Excluir "' +
+                                bm2.title +
+                                '"? Esta ação não pode ser desfeita.',
+                            function () {
+                                deleteBookmark(id)
+                                    .then(function () {
+                                        toast("Bookmark excluído.", "err");
+                                    })
+                                    .catch(function (e) {
+                                        toast("Erro: " + e.message, "err");
+                                    });
+                            },
+                        );
+                    }
+                });
+
+            document
+                .getElementById("btn-confirm")
+                .addEventListener("click", function () {
+                    if (_confirmCb) {
+                        _confirmCb();
+                        _confirmCb = null;
+                    }
+                    closeModal("modal-confirm");
+                });
+            document
+                .getElementById("btn-cancel")
+                .addEventListener("click", function () {
+                    _confirmCb = null;
+                    closeModal("modal-confirm");
+                });
+
+            var newCatInput = document.getElementById("new-cat-input");
+            function doAddCat() {
+                var name = newCatInput.value.trim();
+                createCategory(name).then(function (res) {
+                    if (!res.ok) {
+                        toast(res.msg, "err");
+                        return;
+                    }
+                    newCatInput.value = "";
+                    toast('Categoria "' + name + '" criada!');
+                });
+            }
+            document
+                .getElementById("btn-add-cat")
+                .addEventListener("click", doAddCat);
+            newCatInput.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") doAddCat();
+            });
+
+            document
+                .getElementById("cat-manage-list")
+                .addEventListener("click", function (e) {
+                    var btn = e.target.closest(".btn-del-cat");
+                    if (!btn || btn.disabled) return;
+                    var cat = btn.dataset.cat,
+                        cnt = catCount(cat);
+                    openConfirm(
+                        cnt > 0
+                            ? 'Excluir "' +
+                                  cat +
+                                  '"? Os ' +
+                                  cnt +
+                                  ' bookmark(s) vão para "' +
+                                  DEFAULT_CAT +
+                                  '".'
+                            : 'Excluir "' + cat + '"?',
+                        function () {
+                            deleteCategory(cat)
+                                .then(function () {
+                                    closeModal("modal-cats");
+                                    toast(
+                                        'Categoria "' + cat + '" excluída.',
+                                        "err",
+                                    );
+                                })
+                                .catch(function (e) {
+                                    toast("Erro: " + e.message, "err");
+                                });
+                        },
+                    );
+                });
+
+            document.addEventListener("keydown", function (e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+                    e.preventDefault();
+                    searchEl.focus();
+                    searchEl.select();
+                }
+                if ((e.ctrlKey || e.metaKey) && e.key === "n") {
+                    var open = [].slice
+                        .call(document.querySelectorAll(".modal-bg"))
+                        .some(function (m) {
+                            return !m.classList.contains("hidden");
+                        });
+                    if (!open) {
+                        e.preventDefault();
+                        openBookmarkModal(null);
+                    }
+                }
+                if (e.key === "Escape") {
+                    ["modal-confirm", "modal-cats", "modal-bm"].forEach(
+                        function (id) {
+                            if (
+                                !document
+                                    .getElementById(id)
+                                    .classList.contains("hidden")
+                            )
+                                closeModal(id);
+                        },
+                    );
+                }
+            });
+        </script>
+    </body>
+</html>

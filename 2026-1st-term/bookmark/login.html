@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookmark Manager — Login</title>
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+  <div class="login-card">
+
+    <div class="login-brand">
+      <span class="brand-emoji">🔖</span>
+      <h1>Bookmarks</h1>
+      <p>Acesse seus links de qualquer dispositivo</p>
+    </div>
+
+    <div class="tabs">
+      <button id="tab-login"    class="tab active">Entrar</button>
+      <button id="tab-register" class="tab">Criar conta</button>
+    </div>
+
+    <form id="form-auth" novalidate>
+
+      <div class="field">
+        <label for="auth-email">E-mail</label>
+        <input id="auth-email" type="email" placeholder="seu@email.com"
+               autocomplete="email" required>
+      </div>
+
+      <div class="field">
+        <label for="auth-password">Senha</label>
+        <div class="pass-wrap">
+          <input id="auth-password" type="password" placeholder="Mínimo 6 caracteres"
+                 autocomplete="current-password" required>
+          <button type="button" id="btn-toggle-pass" title="Mostrar senha">👁</button>
+        </div>
+      </div>
+
+      <div id="auth-error" class="auth-error hidden"></div>
+
+      <button type="submit" id="btn-auth" class="btn-auth">
+        <span id="auth-label">Entrar</span>
+        <span id="auth-spinner" class="spinner hidden"></span>
+      </button>
+
+    </form>
+
+    <p class="login-footer">
+      Dados armazenados no Firebase e sincronizados entre dispositivos.
+    </p>
+
+  </div>
+
+  <script type="module" src="login.js"></script>
+</body>
+</html>

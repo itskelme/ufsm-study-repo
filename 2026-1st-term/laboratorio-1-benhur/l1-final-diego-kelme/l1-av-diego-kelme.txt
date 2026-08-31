@@ -1,0 +1,27 @@
+Oi professor, sobre a minha autoavaliação eu gostaria de falar que gostei muito da disciplina. Fiz os três trabalhos, todos funcionando, e sinto que realmente aprendi o conteúdo no processo, não foi só entregar por entregar
+
+O t1 foi o mais tranquilo, era o básico né... funções matemáticas (potência, fatorial, seno, cosseno, raiz, tabela), cada uma separada e com seleção e repetição ali dentro também. Eu diria que essa serviu pra pegar o jeito e ter uma visão de como seriam os próximos trabalhos...
+
+
+O t2 foi o mais divertido, o quebra cabeças deslizante, com a matriz 4x4 dentro de um vetor, movimentos, embaralhamento e tudo desenhado na tela pelo terminal. Foi um trabalho que não esperava na disciplina e me surpreendeu, certamente faria outros assim; a parte mais divertida foi colocar as mecânicas para funcionar como por exemplo garantir que a movimentação da peça não vai fazer ela sair da caixa.
+
+O t3 foi onde a coisa ficou mais complicada pra mim e onde tive as maiores dúvidas... o gerenciador de notas é complexo, tem retângulos, cor, etiquetas, leitura e escrita de arquivo, alocação dinâmica de memória crescendo e encolhendo o vetor conforme precisa. 
+
+
+Tive várias dúvidas, principalmente em registro com ponteiro mais aninhado, e tentar aplicar alguns dos conceitos e exemplos de sala ajudou bastante. No fim testei bastante coisa... linha mal formatada indo pro arquivo de erro, cor fora do limite sendo cortada, texto grande demais sendo truncado.
+
+Em termos de conteúdo, me sinto bem no essencial, dito isso variáveis, entrada e saída, funções, passagem por valor e referência, seleção, laços, vetores e strings. 
+
+Onde ainda travo bastante é em ponteiro com registro muito aninhado sabe... uso, entendo, mas penso mais devagar que gostaria e acabo me perdendo às vezes, ainda mais com vetores dentro de registro e também matrizes como as de tela...
+
+
+Usei a IA para me ajudar em algumas partes, principalmente para explicar os códigos e sugerir melhorias ou formas mais elegantes de implementar, mas a ajuda e orientação do professor foi indispensável também.
+
+Sobre a metodologia eu gostei do formato de ir do simples (t1) ao que junta tudo (t3), cada trabalho subindo um pouco o nível mas usando o que já tinha aprendido antes. Isso ajudou a não me perder e fixou melhor os conceitos.
+
+Os exemplos de código e as dicas do professor foram úteis, adorei essa abordagem de ajudar a solucionar juntos!!
+E afinal, é bem legal ver os programas que escrevi funcionando!!
+
+Talvez seja o melhor sentimento depois de horas travado tentando resolver um bug.  Vou conseguir ir bem em lab 2, assim espero!!
+
+Enfim, muito obrigado por tudo professor!

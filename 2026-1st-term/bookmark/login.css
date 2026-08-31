@@ -1,0 +1,166 @@
+/* ── Variables ────────────────────────────────────────── */
+:root {
+  --bg:     #0d1117;
+  --card:   #161b22;
+  --border: #30363d;
+  --text:   #e6edf3;
+  --dim:    #8b949e;
+  --muted:  #484f58;
+  --accent: #388bfd;
+  --red:    #f85149;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* ── Card ─────────────────────────────────────────────── */
+.login-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 38px 40px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.45);
+  animation: slide-in .25s ease;
+}
+
+@keyframes slide-in {
+  from { transform: translateY(-14px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+/* ── Brand ────────────────────────────────────────────── */
+.login-brand {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.brand-emoji { font-size: 2.6rem; }
+.login-brand h1 { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+.login-brand p  { font-size: .82rem; color: var(--dim); }
+
+/* ── Tabs ─────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-radius: 5px;
+  padding: 8px;
+  color: var(--dim);
+  font-size: .875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.tab.active { background: var(--accent); color: #fff; font-weight: 700; }
+.tab:not(.active):hover { background: rgba(255,255,255,.05); color: var(--text); }
+
+/* ── Form ─────────────────────────────────────────────── */
+form { display: flex; flex-direction: column; gap: 14px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: .8rem; font-weight: 600; color: var(--dim); }
+
+.field input {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: .9rem;
+  outline: none;
+  width: 100%;
+  transition: border-color .15s;
+}
+.field input:focus { border-color: var(--accent); }
+.field input.err   { border-color: var(--red); }
+
+.pass-wrap { position: relative; }
+.pass-wrap input { padding-right: 42px; }
+
+#btn-toggle-pass {
+  position: absolute;
+  right: 9px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  cursor: pointer; font-size: .9rem; line-height: 1;
+  padding: 4px; opacity: .5; transition: opacity .12s;
+}
+#btn-toggle-pass:hover { opacity: 1; }
+
+/* ── Error box ────────────────────────────────────────── */
+.auth-error {
+  background: rgba(248,81,73,.12);
+  border: 1px solid rgba(248,81,73,.35);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: .82rem;
+  color: var(--red);
+  line-height: 1.45;
+}
+
+/* ── Submit button ────────────────────────────────────── */
+.btn-auth {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 11px;
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background .15s, transform .1s;
+  margin-top: 2px;
+}
+.btn-auth:hover:not(:disabled) { background: #1f6feb; transform: translateY(-1px); }
+.btn-auth:disabled { opacity: .6; cursor: default; transform: none; }
+
+/* ── Spinner ──────────────────────────────────────────── */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Footer note ──────────────────────────────────────── */
+.login-footer {
+  text-align: center;
+  font-size: .73rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* ── Utility ──────────────────────────────────────────── */
+.hidden { display: none !important; }
