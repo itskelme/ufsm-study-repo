@@ -1,18 +1,20 @@
 #include "tabuleiro.h"
 #include "solver.h"
 
+
 int PosicaoValida(Tabuleiro* t, int l, int c) {
-    if (!t) return 0;
+    if(!t) return 0;
     return (l >= 0 && l < t->linhas && c >= 0 && c < t->colunas);
 }
 
+
 Tabuleiro* Alocar(int linhas, int colunas, int bombas) {
-    if (linhas <= 0 || colunas <= 0 || bombas <= 0 || bombas >= linhas * colunas) {
+    if(linhas <= 0 || colunas <= 0 || bombas <= 0 || bombas >= linhas * colunas) {
         return NULL;
     }
 
     Tabuleiro* t = (Tabuleiro*)malloc(sizeof(Tabuleiro));
-    if (!t) return NULL;
+    if(!t) return NULL;
 
     t->linhas = linhas;
     t->colunas = colunas;
@@ -31,22 +33,27 @@ Tabuleiro* Alocar(int linhas, int colunas, int bombas) {
     return t;
 }
 
+
 void Liberar(Tabuleiro* t) {
     if (!t) return;
+
     if (t->celulas) {
-        for (int i = 0; i < t->linhas; i++) {
+        for(int i = 0; i < t->linhas; i++) {
             free(t->celulas[i]);
         }
         free(t->celulas);
     }
+
     if (t->estado) {
         for (int i = 0; i < t->linhas; i++) {
             free(t->estado[i]);
         }
         free(t->estado);
     }
+
     free(t);
 }
+
 
 static void SorteiaBombas(Tabuleiro* t, int safe_l, int safe_c) {
     for (int i = 0; i < t->linhas; i++) {
@@ -56,7 +63,7 @@ static void SorteiaBombas(Tabuleiro* t, int safe_l, int safe_c) {
     }
 
     int colocadas = 0;
-    while (colocadas < t->nrBombas) {
+    while(colocadas < t->nrBombas) {
         int l = rand() % t->linhas;
         int c = rand() % t->colunas;
 
@@ -73,13 +80,14 @@ static void SorteiaBombas(Tabuleiro* t, int safe_l, int safe_c) {
         }
     }
 
+    // preenche os vizinhos
     for (int i = 0; i < t->linhas; i++) {
         for (int j = 0; j < t->colunas; j++) {
             if (t->celulas[i][j] == -1) continue;
 
             int count = 0;
-            for (int di = -1; di <= 1; di++) {
-                for (int dj = -1; dj <= 1; dj++) {
+            for(int di = -1; di <= 1; di++) {
+                for(int dj = -1; dj <= 1; dj++) {
                     int ni = i + di;
                     int nj = j + dj;
                     if (PosicaoValida(t, ni, nj) && t->celulas[ni][nj] == -1) {
@@ -92,6 +100,7 @@ static void SorteiaBombas(Tabuleiro* t, int safe_l, int safe_c) {
     }
 }
 
+
 void Preencher(Tabuleiro* t, int safe_l, int safe_c) {
     int tentativas = 0;
     const int limite = 150;
@@ -102,10 +111,11 @@ void Preencher(Tabuleiro* t, int safe_l, int safe_c) {
         if (TestaSolucao(t, safe_l, safe_c)) {
             break;
         }
-    } while (tentativas < limite);
+    } while(tentativas < limite);
 
     t->gerado = 1;
 }
+
 
 int Abrir(Tabuleiro* t, int l, int c) {
     if (!PosicaoValida(t, l, c)) return 1;
@@ -138,10 +148,12 @@ int Abrir(Tabuleiro* t, int l, int c) {
     return 1;
 }
 
+
 void MudaBandeira(Tabuleiro* t, int l, int c) {
     if (!PosicaoValida(t, l, c) || t->estado[l][c] == 1) return;
     t->estado[l][c] = (t->estado[l][c] == 2 ? 0 : 2);
 }
+
 
 int Ganhou(Tabuleiro* t) {
     if (!t) return 0;
@@ -149,12 +161,13 @@ int Ganhou(Tabuleiro* t) {
     return (t->abertas == (total - t->nrBombas));
 }
 
+
 void ContaVizinhos(Tabuleiro* t, int l, int c, int *ocultos, int *bandeiras) {
     *ocultos = 0;
     *bandeiras = 0;
 
-    for (int dl = -1; dl <= 1; dl++) {
-        for (int dc = -1; dc <= 1; dc++) {
+    for(int dl = -1; dl <= 1; dl++) {
+        for(int dc = -1; dc <= 1; dc++) {
             if (dl == 0 && dc == 0) continue;
             int nl = l + dl;
             int nc = c + dc;
@@ -165,6 +178,7 @@ void ContaVizinhos(Tabuleiro* t, int l, int c, int *ocultos, int *bandeiras) {
         }
     }
 }
+
 
 void Imprimir(Tabuleiro* t, int revelado) {
     if (!t) return;
@@ -198,7 +212,7 @@ void Imprimir(Tabuleiro* t, int revelado) {
         printf("\n");
         if (i < t->linhas - 1) {
             printf("    ├");
-            for (int j = 0; j < t->colunas; j++) printf("───%s", (j < t->colunas - 1 ? "┼" : "┤\n"));
+            for(int j = 0; j < t->colunas; j++) printf("───%s", (j < t->colunas - 1 ? "┼" : "┤\n"));
         }
     }
     printf("    └");

@@ -5,6 +5,7 @@ typedef struct {
     int c;
 } Posicao;
 
+
 static int PegaVizinhosFechados(Tabuleiro *t, int l, int c, Posicao out[]) {
     int n = 0;
     for (int dl = -1; dl <= 1; dl++) {
@@ -22,6 +23,7 @@ static int PegaVizinhosFechados(Tabuleiro *t, int l, int c, Posicao out[]) {
     return n;
 }
 
+
 static int TemPosicao(const Posicao vet[], int n, int l, int c) {
     for (int i = 0; i < n; i++) {
         if (vet[i].l == l && vet[i].c == c) return 1;
@@ -29,12 +31,14 @@ static int TemPosicao(const Posicao vet[], int n, int l, int c) {
     return 0;
 }
 
+
 static int Subconjunto(const Posicao sub[], int n1, const Posicao sup[], int n2) {
     for (int i = 0; i < n1; i++) {
         if (!TemPosicao(sup, n2, sub[i].l, sub[i].c)) return 0;
     }
     return 1;
 }
+
 
 int ProximoPasso(Tabuleiro *t, int *l_out, int *c_out, int *acao_out) {
     if (!t) return 0;
@@ -52,7 +56,7 @@ int ProximoPasso(Tabuleiro *t, int *l_out, int *c_out, int *acao_out) {
             Posicao viz[8];
             int n_viz = PegaVizinhosFechados(t, l, c, viz);
 
-            // Todas as casas fechadas sao bombas
+            // todas as casas fechadas sao bombas
             if (n == flags + ocultos && n_viz > 0) {
                 *l_out = viz[0].l;
                 *c_out = viz[0].c;
@@ -60,7 +64,7 @@ int ProximoPasso(Tabuleiro *t, int *l_out, int *c_out, int *acao_out) {
                 return 1;
             }
 
-            // Todas as bombas ja foram achadas
+            // todas as bombas ja foram achadas
             if (n == flags && n_viz > 0) {
                 *l_out = viz[0].l;
                 *c_out = viz[0].c;
@@ -108,7 +112,7 @@ int ProximoPasso(Tabuleiro *t, int *l_out, int *c_out, int *acao_out) {
                                     if (!TemPosicao(viz1, n1, viz2[k].l, viz2[k].c)) {
                                         *l_out = viz2[k].l;
                                         *c_out = viz2[k].c;
-                                        *acao_out = 1; // abrir
+                                        *acao_out = 1;
                                         return 1;
                                     }
                                 }
@@ -117,7 +121,7 @@ int ProximoPasso(Tabuleiro *t, int *l_out, int *c_out, int *acao_out) {
                                     if (!TemPosicao(viz1, n1, viz2[k].l, viz2[k].c)) {
                                         *l_out = viz2[k].l;
                                         *c_out = viz2[k].c;
-                                        *acao_out = 2; // bandeira
+                                        *acao_out = 2;
                                         return 1;
                                     }
                                 }
@@ -131,6 +135,7 @@ int ProximoPasso(Tabuleiro *t, int *l_out, int *c_out, int *acao_out) {
 
     return 0;
 }
+
 
 int TestaSolucao(Tabuleiro *orig, int safe_l, int safe_c) {
     Tabuleiro *t = Alocar(orig->linhas, orig->colunas, orig->nrBombas);
@@ -151,7 +156,7 @@ int TestaSolucao(Tabuleiro *orig, int safe_l, int safe_c) {
         int l, c, acao;
         if (!ProximoPasso(t, &l, &c, &acao)) {
             Liberar(t);
-            return 0; // Travou: exigiria adivinhar
+            return 0; // Travou: precisaria de sorte
         }
 
         if (acao == 2) {

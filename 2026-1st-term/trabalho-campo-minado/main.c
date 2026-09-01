@@ -13,10 +13,12 @@
   #define DORMIR(ms) usleep((ms) * 1000)
 #endif
 
+
 static void LimpaBuffer(void) {
     int ch;
     while ((ch = getchar()) != '\n' && ch != EOF);
 }
+
 
 static void ModoJogador(Tabuleiro *t) {
     int fim = 0;
@@ -95,6 +97,7 @@ static void ModoJogador(Tabuleiro *t) {
     }
 }
 
+
 static void ModoComputador(Tabuleiro *t) {
     int passos = 0;
 
@@ -139,6 +142,7 @@ static void ModoComputador(Tabuleiro *t) {
         Imprimir(t, 1);
     }
 }
+
 
 int main(void) {
     srand((unsigned int)time(NULL));
